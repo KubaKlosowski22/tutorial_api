@@ -3,18 +3,19 @@
 namespace App\Controller;
 
 use App\Repository\UserRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\SerializerInterface;
 
-class UserController extends AbstractController
+class UserController extends ApiController
 {
     #[Route('/users', name: 'find_all_users')]
-    public function findAll(UserRepository $repository): JsonResponse
-    {            
-        $users = $repository->getAll();
-        return $this->json($users, Response::HTTP_OK);
+    public function findAll(UserRepository $repository, SerializerInterface $serializer): Response
+    {
+        $users = $repository->findAll();
+
+        return $this->createJsonResponse($users, Response::HTTP_OK);
     }
 
 
@@ -22,18 +23,11 @@ class UserController extends AbstractController
     public function findOne(UserRepository $repository, string $id): JsonResponse
     {
         $user = $repository->find($id);
-        
+
         if (!$user) {
             return $this->json(['details' => "User with id {$id} not found"], Response::HTTP_NOT_FOUND);
         }
-        
-        $response = [
-            'id' => $user->getId(),
-            'email' => $user->getEmail(),
-            'roles' => $user->getRoles(),
-            'password' => $user->getPassword() 
-        ];
-        
-        return $this->json($response, Response::HTTP_OK);
+
+        return $this->createJsonResponse($user, Response::HTTP_OK);
     }
 }
